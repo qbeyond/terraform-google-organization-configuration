@@ -26,8 +26,3 @@ output "org_id" {
     google_organization_policy.list
   ]
 }
-
-output "access_policy" {
-  description = "Access Policy name."
-  value       = local.access_policy_name
-}
