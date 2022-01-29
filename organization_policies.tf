@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-# tfdoc:file:description Organization policies.
+# tfdoc:file:description Organization-level organization policies.
 
 resource "google_organization_policy" "boolean" {
   for_each   = var.policy_boolean
