@@ -1,0 +1,7 @@
+# Paths for the module
+modules/organization/
+modules/organization/==>
+
+# Files required for Licensing
+LICENSE
+NOTICE
