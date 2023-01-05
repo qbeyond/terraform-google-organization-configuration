@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
+# Make sure to impersonate an service account
+# gcloud application-default not supported
+provider "google-beta" {
+  impersonate_service_account = "sa-terraformorganization-01@dev-automation-01.iam.gserviceaccount.com"
+}
+
+provider "google" {
+  impersonate_service_account = "sa-terraformorganization-01@dev-automation-01.iam.gserviceaccount.com"
+}
+
 module "google_organization" {
   source          = "../.."
   organization_id = var.organization_id
-  
+
   org_policy_custom_constraints = {
     "custom.gkeEnableAutoUpgrade" = {
       resource_types = ["container.googleapis.com/NodePool"]
