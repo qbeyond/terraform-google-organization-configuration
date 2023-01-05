@@ -478,3 +478,173 @@ module "org" {
 | [tag_values](outputs.tf#L99)             | Tag value resources.                                          |           |
 
 <!-- END TFDOC -->
+
+<!-- BEGIN_TF_DOCS -->
+## Usage
+
+It's very easy to use!
+```hcl
+/**
+ * Copyright 2023 q.beyond AG
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+module "google_organitation" {
+  source          = "../.."
+  organization_id = var.organization_id
+}
+```
+
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.1 |
+| <a name="requirement_google"></a> [google](#requirement\_google) | >= 4.40.0 |
+| <a name="requirement_google-beta"></a> [google-beta](#requirement\_google-beta) | >= 4.40.0 |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_organization_id"></a> [organization\_id](#input\_organization\_id) | Organization id in organizations/nnnnnn format. | `string` | n/a | yes |
+| <a name="input_contacts"></a> [contacts](#input\_contacts) | List of essential contacts for this resource. Must be in the form EMAIL -> [NOTIFICATION\_TYPES]. Valid notification types are ALL, SUSPENSION, SECURITY, TECHNICAL, BILLING, LEGAL, PRODUCT\_UPDATES. | `map(list(string))` | `{}` | no |
+| <a name="input_custom_roles"></a> [custom\_roles](#input\_custom\_roles) | Map of role name => list of permissions to create in this project. | `map(list(string))` | `{}` | no |
+| <a name="input_firewall_policies"></a> [firewall\_policies](#input\_firewall\_policies) | Hierarchical firewall policy rules created in the organization. | <pre>map(map(object({<br>    action                  = string<br>    description             = string<br>    direction               = string<br>    logging                 = bool<br>    ports                   = map(list(string))<br>    priority                = number<br>    ranges                  = list(string)<br>    target_resources        = list(string)<br>    target_service_accounts = list(string)<br>    # preview                 = bool<br>  })))</pre> | `{}` | no |
+| <a name="input_firewall_policy_association"></a> [firewall\_policy\_association](#input\_firewall\_policy\_association) | The hierarchical firewall policy to associate to this folder. Must be either a key in the `firewall_policies` map or the id of a policy defined somewhere else. | `map(string)` | `{}` | no |
+| <a name="input_firewall_policy_factory"></a> [firewall\_policy\_factory](#input\_firewall\_policy\_factory) | Configuration for the firewall policy factory. | <pre>object({<br>    cidr_file   = string<br>    policy_name = string<br>    rules_file  = string<br>  })</pre> | `null` | no |
+| <a name="input_group_iam"></a> [group\_iam](#input\_group\_iam) | Authoritative IAM binding for organization groups, in {GROUP\_EMAIL => [ROLES]} format. Group emails need to be static. Can be used in combination with the `iam` variable. | `map(list(string))` | `{}` | no |
+| <a name="input_iam"></a> [iam](#input\_iam) | IAM bindings, in {ROLE => [MEMBERS]} format. | `map(list(string))` | `{}` | no |
+| <a name="input_iam_additive"></a> [iam\_additive](#input\_iam\_additive) | Non authoritative IAM bindings, in {ROLE => [MEMBERS]} format. | `map(list(string))` | `{}` | no |
+| <a name="input_iam_additive_members"></a> [iam\_additive\_members](#input\_iam\_additive\_members) | IAM additive bindings in {MEMBERS => [ROLE]} format. This might break if members are dynamic values. | `map(list(string))` | `{}` | no |
+| <a name="input_iam_audit_config"></a> [iam\_audit\_config](#input\_iam\_audit\_config) | Service audit logging configuration. Service as key, map of log permission (eg DATA\_READ) and excluded members as value for each service. | `map(map(list(string)))` | `{}` | no |
+| <a name="input_iam_audit_config_authoritative"></a> [iam\_audit\_config\_authoritative](#input\_iam\_audit\_config\_authoritative) | IAM Authoritative service audit logging configuration. Service as key, map of log permission (eg DATA\_READ) and excluded members as value for each service. Audit config should also be authoritative when using authoritative bindings. Use with caution. | `map(map(list(string)))` | `null` | no |
+| <a name="input_iam_bindings_authoritative"></a> [iam\_bindings\_authoritative](#input\_iam\_bindings\_authoritative) | IAM authoritative bindings, in {ROLE => [MEMBERS]} format. Roles and members not explicitly listed will be cleared. Bindings should also be authoritative when using authoritative audit config. Use with caution. | `map(list(string))` | `null` | no |
+| <a name="input_logging_exclusions"></a> [logging\_exclusions](#input\_logging\_exclusions) | Logging exclusions for this organization in the form {NAME -> FILTER}. | `map(string)` | `{}` | no |
+| <a name="input_logging_sinks"></a> [logging\_sinks](#input\_logging\_sinks) | Logging sinks to create for the organization. | <pre>map(object({<br>    bq_partitioned_table = optional(bool)<br>    description          = optional(string)<br>    destination          = string<br>    disabled             = optional(bool, false)<br>    exclusions           = optional(map(string), {})<br>    filter               = string<br>    include_children     = optional(bool, true)<br>    type                 = string<br>  }))</pre> | `{}` | no |
+| <a name="input_network_tags"></a> [network\_tags](#input\_network\_tags) | Network tags by key name. The `iam` attribute behaves like the similarly named one at module level. | <pre>map(object({<br>    description = optional(string, "Managed by the Terraform organization module.")<br>    iam         = optional(map(list(string)), {})<br>    network     = string # project_id/vpc_name<br>    values = optional(map(object({<br>      description = optional(string, "Managed by the Terraform organization module.")<br>      iam         = optional(map(list(string)), {})<br>    })), {})<br>  }))</pre> | `{}` | no |
+| <a name="input_org_policies"></a> [org\_policies](#input\_org\_policies) | Organization policies applied to this organization keyed by policy name. | <pre>map(object({<br>    inherit_from_parent = optional(bool) # for list policies only.<br>    reset               = optional(bool)<br><br>    # default (unconditional) values<br>    allow = optional(object({<br>      all    = optional(bool)<br>      values = optional(list(string))<br>    }))<br>    deny = optional(object({<br>      all    = optional(bool)<br>      values = optional(list(string))<br>    }))<br>    enforce = optional(bool, true) # for boolean policies only.<br><br>    # conditional values<br>    rules = optional(list(object({<br>      allow = optional(object({<br>        all    = optional(bool)<br>        values = optional(list(string))<br>      }))<br>      deny = optional(object({<br>        all    = optional(bool)<br>        values = optional(list(string))<br>      }))<br>      enforce = optional(bool, true) # for boolean policies only.<br>      condition = object({<br>        description = optional(string)<br>        expression  = optional(string)<br>        location    = optional(string)<br>        title       = optional(string)<br>      })<br>    })), [])<br>  }))</pre> | `{}` | no |
+| <a name="input_org_policies_data_path"></a> [org\_policies\_data\_path](#input\_org\_policies\_data\_path) | Path containing org policies in YAML format. | `string` | `null` | no |
+| <a name="input_org_policy_custom_constraints"></a> [org\_policy\_custom\_constraints](#input\_org\_policy\_custom\_constraints) | Organization policiy custom constraints keyed by constraint name. | <pre>map(object({<br>    display_name   = optional(string)<br>    description    = optional(string)<br>    action_type    = string<br>    condition      = string<br>    method_types   = list(string)<br>    resource_types = list(string)<br>  }))</pre> | `{}` | no |
+| <a name="input_org_policy_custom_constraints_data_path"></a> [org\_policy\_custom\_constraints\_data\_path](#input\_org\_policy\_custom\_constraints\_data\_path) | Path containing org policy custom constraints in YAML format. | `string` | `null` | no |
+| <a name="input_tag_bindings"></a> [tag\_bindings](#input\_tag\_bindings) | Tag bindings for this organization, in key => tag value id format. | `map(string)` | `null` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags by key name. The `iam` attribute behaves like the similarly named one at module level. | <pre>map(object({<br>    description = optional(string, "Managed by the Terraform organization module.")<br>    iam         = optional(map(list(string)), {})<br>    values = optional(map(object({<br>      description = optional(string, "Managed by the Terraform organization module.")<br>      iam         = optional(map(list(string)), {})<br>    })), {})<br>  }))</pre> | `{}` | no |
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_custom_role_id"></a> [custom\_role\_id](#output\_custom\_role\_id) | Map of custom role IDs created in the organization. |
+| <a name="output_custom_roles"></a> [custom\_roles](#output\_custom\_roles) | Map of custom roles resources created in the organization. |
+| <a name="output_firewall_policies"></a> [firewall\_policies](#output\_firewall\_policies) | Map of firewall policy resources created in the organization. |
+| <a name="output_firewall_policy_id"></a> [firewall\_policy\_id](#output\_firewall\_policy\_id) | Map of firewall policy ids created in the organization. |
+| <a name="output_network_tag_keys"></a> [network\_tag\_keys](#output\_network\_tag\_keys) | Tag key resources. |
+| <a name="output_network_tag_values"></a> [network\_tag\_values](#output\_network\_tag\_values) | Tag value resources. |
+| <a name="output_organization_id"></a> [organization\_id](#output\_organization\_id) | Organization id dependent on module resources. |
+| <a name="output_sink_writer_identities"></a> [sink\_writer\_identities](#output\_sink\_writer\_identities) | Writer identities created for each sink. |
+| <a name="output_tag_keys"></a> [tag\_keys](#output\_tag\_keys) | Tag key resources. |
+| <a name="output_tag_values"></a> [tag\_values](#output\_tag\_values) | Tag value resources. |
+
+## Resource types
+
+| Type | Used |
+|------|-------|
+| [google-beta_google_essential_contacts_contact](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_essential_contacts_contact) | 1 |
+| [google-beta_google_org_policy_custom_constraint](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_org_policy_custom_constraint) | 1 |
+| [google_bigquery_dataset_iam_member](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset_iam_member) | 1 |
+| [google_compute_firewall_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy) | 1 |
+| [google_compute_firewall_policy_association](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_association) | 1 |
+| [google_compute_firewall_policy_rule](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_rule) | 1 |
+| [google_logging_organization_exclusion](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/logging_organization_exclusion) | 1 |
+| [google_logging_organization_sink](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/logging_organization_sink) | 1 |
+| [google_org_policy_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/org_policy_policy) | 1 |
+| [google_organization_iam_audit_config](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_audit_config) | 1 |
+| [google_organization_iam_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_binding) | 1 |
+| [google_organization_iam_custom_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_custom_role) | 1 |
+| [google_organization_iam_member](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_member) | 1 |
+| [google_organization_iam_policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_policy) | 1 |
+| [google_project_iam_member](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | 1 |
+| [google_pubsub_topic_iam_member](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member) | 1 |
+| [google_storage_bucket_iam_member](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_iam_member) | 1 |
+| [google_tags_tag_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_binding) | 1 |
+| [google_tags_tag_key](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_key) | 1 |
+| [google_tags_tag_key_iam_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_key_iam_binding) | 1 |
+| [google_tags_tag_value](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value) | 1 |
+| [google_tags_tag_value_iam_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value_iam_binding) | 1 |
+
+**`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
+
+## Modules
+
+No modules.
+
+## Resources by Files
+
+### ..\..\firewall-policies.tf
+
+| Name | Type |
+|------|------|
+| [google_compute_firewall_policy.policy](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy) | resource |
+| [google_compute_firewall_policy_association.association](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_association) | resource |
+| [google_compute_firewall_policy_rule.rule](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_rule) | resource |
+
+### ..\..\iam.tf
+
+| Name | Type |
+|------|------|
+| [google_organization_iam_audit_config.config](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_audit_config) | resource |
+| [google_organization_iam_binding.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_binding) | resource |
+| [google_organization_iam_custom_role.roles](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_custom_role) | resource |
+| [google_organization_iam_member.additive](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_member) | resource |
+| [google_organization_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_policy) | resource |
+| [google_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy) | data source |
+
+### ..\..\logging.tf
+
+| Name | Type |
+|------|------|
+| [google_bigquery_dataset_iam_member.bq-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/bigquery_dataset_iam_member) | resource |
+| [google_logging_organization_exclusion.logging-exclusion](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/logging_organization_exclusion) | resource |
+| [google_logging_organization_sink.sink](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/logging_organization_sink) | resource |
+| [google_project_iam_member.bucket-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
+| [google_pubsub_topic_iam_member.pubsub-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member) | resource |
+| [google_storage_bucket_iam_member.storage-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_iam_member) | resource |
+
+### ..\..\main.tf
+
+| Name | Type |
+|------|------|
+| [google-beta_google_essential_contacts_contact.contact](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_essential_contacts_contact) | resource |
+
+### ..\..\org-policy-custom-constraints.tf
+
+| Name | Type |
+|------|------|
+| [google-beta_google_org_policy_custom_constraint.constraint](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_org_policy_custom_constraint) | resource |
+
+### ..\..\organization-policies.tf
+
+| Name | Type |
+|------|------|
+| [google_org_policy_policy.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/org_policy_policy) | resource |
+
+### ..\..\tags.tf
+
+| Name | Type |
+|------|------|
+| [google_tags_tag_binding.binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_binding) | resource |
+| [google_tags_tag_key.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_key) | resource |
+| [google_tags_tag_key_iam_binding.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_key_iam_binding) | resource |
+| [google_tags_tag_value.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value) | resource |
+| [google_tags_tag_value_iam_binding.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value_iam_binding) | resource |
+<!-- END_TF_DOCS -->
