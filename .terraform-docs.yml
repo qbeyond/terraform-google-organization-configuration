@@ -41,9 +41,23 @@ content: |-
 
   {{ indent 0 "#" }} Usage
 
-  It's very easy to use!
+  The minimal configuration doesn't do anything. 
+
   ```hcl
-  {{ include "examples/basic/main.tf" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/basic/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/basic/main.tf") "" }}
+  ```
+
+  So you should configure more than that!
+
+  {{ indent 1 "#" }} Custom Constraints
+
+  Refer to the [Creating and managing custom constraints](https://cloud.google.com/resource-manager/docs/organization-policy/creating-managing-custom-constraints) documentation for details on usage.
+  To manage organization policy custom constraints, the `orgpolicy.googleapis.com` service should be enabled in the quota project.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_constraints/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_constraints/main.tf") "" }}
   ```
   
   {{ .Requirements }}
