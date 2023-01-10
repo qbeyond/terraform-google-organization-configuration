@@ -21,4 +21,5 @@ variable "organization_id" {
 
 variable "impersonate_service_account" {
   description = "Mail of service account to impersonate, because ADC not supported."
+  type        = string
 }
