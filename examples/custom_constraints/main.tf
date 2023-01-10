@@ -17,11 +17,11 @@
 # Make sure to impersonate an service account
 # gcloud application-default not supported
 provider "google-beta" {
-  impersonate_service_account = "sa-terraformorganization-01@dev-automation-01.iam.gserviceaccount.com"
+  impersonate_service_account = var.impersonate_service_account
 }
 
 provider "google" {
-  impersonate_service_account = "sa-terraformorganization-01@dev-automation-01.iam.gserviceaccount.com"
+  impersonate_service_account = var.impersonate_service_account
 }
 
 module "google_organization" {
