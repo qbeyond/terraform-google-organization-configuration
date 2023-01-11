@@ -59,6 +59,28 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_constraints/variables.tf") "" }}
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_constraints/main.tf") "" }}
   ```
+
+  {{ indent 1 "#" }} Custom Constraints Factory
+
+  Org policy custom constraints can be loaded from a directory containing YAML files where each file defines one or more custom constraints. The structure of the YAML files is exactly the same as the `org_policy_custom_constraints` variable.
+  
+  The example below deploys a few org policy custom constraints split between two YAML files.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_constraints_factory/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_constraints_factory/main.tf") "" }}
+  ```
+
+  The following two files are in the folder `custom_constrains`.
+
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/custom_constraints_factory/custom_constraints/dataproc.yaml") "" }}
+  ```
+
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/custom_constraints_factory/custom_constraints/gke.yaml") "" }}
+  ```
+  
   
   {{ .Requirements }}
   {{ .Providers }}

@@ -96,58 +96,6 @@ Some care must also be taken with the `groups_iam` variable (and in some situati
 See the [organization policy factory in the project module](../project#organization-policy-factory).
 
 
-### Org policy custom constraints factory
-
-Org policy custom constraints can be loaded from a directory containing YAML files where each file defines one or more custom constraints. The structure of the YAML files is exactly the same as the `org_policy_custom_constraints` variable.
-
-The example below deploys a few org policy custom constraints split between two YAML files.
-
-```hcl
-module "org" {
-  source          = "./fabric/modules/organization"
-  organization_id = var.organization_id
-  
-  org_policy_custom_constraints_data_path = "configs/custom-constraints"
-}
-# tftest modules=1 resources=3 files=gke,dataproc
-```
-
-```yaml
-# tftest file gke configs/custom-constraints/gke.yaml
-custom.gkeEnableLogging:
-  resource_types:
-  - container.googleapis.com/Cluster
-  method_types:
-  - CREATE
-  - UPDATE
-  condition: resource.loggingService == "none"
-  action_type: DENY
-  display_name: Do not disable Cloud Logging
-custom.gkeEnableAutoUpgrade:
-  resource_types:
-  - container.googleapis.com/NodePool
-  method_types:
-  - CREATE
-  condition: resource.management.autoUpgrade == true
-  action_type: ALLOW
-  display_name: Enable node auto-upgrade
-  description: All node pools must have node auto-upgrade enabled.
-```
-
-```yaml
-# tftest file dataproc configs/custom-constraints/dataproc.yaml
-custom.dataprocNoMoreThan10Workers:
-  resource_types:
-  - dataproc.googleapis.com/Cluster
-  method_types:
-  - CREATE
-  - UPDATE
-  condition: resource.config.workerConfig.numInstances + resource.config.secondaryWorkerConfig.numInstances > 10
-  action_type: DENY
-  display_name: Total number of worker instances cannot be larger than 10
-  description: Cluster cannot have more than 10 workers, including primary and secondary workers.
-```
-
 ## Hierarchical firewall policies
 
 Hierarchical firewall policies can be managed in two ways:
@@ -486,6 +434,7 @@ variable "organization_id" {
 
 variable "impersonate_service_account" {
   description = "Mail of service account to impersonate, because ADC not supported."
+  type        = string
 }
 
 
@@ -522,6 +471,77 @@ module "google_organization" {
   }
 }
 ```
+
+### Custom Constraints Factory
+
+Org policy custom constraints can be loaded from a directory containing YAML files where each file defines one or more custom constraints. The structure of the YAML files is exactly the same as the `org_policy_custom_constraints` variable.
+The example below deploys a few org policy custom constraints split between two YAML files.
+
+```hcl
+variable "organization_id" {
+  description = "Organization id in organizations/nnnnnn format."
+  type        = string
+}
+
+variable "impersonate_service_account" {
+  description = "Mail of service account to impersonate, because ADC not supported."
+}
+
+
+# Make sure to impersonate an service account
+# gcloud application-default not supported
+provider "google-beta" {
+  impersonate_service_account = var.impersonate_service_account
+}
+
+provider "google" {
+  impersonate_service_account = var.impersonate_service_account
+}
+
+module "org" {
+  source          = "../../"
+  organization_id = var.organization_id
+
+  org_policy_custom_constraints_data_path = "custom_constraints"
+}
+```
+
+The following two files are in the folder `custom_constrains`.
+
+```yaml
+custom.dataprocNoMoreThan10Workers:
+  resource_types:
+  - dataproc.googleapis.com/Cluster
+  method_types:
+  - CREATE
+  - UPDATE
+  condition: resource.config.workerConfig.numInstances + resource.config.secondaryWorkerConfig.numInstances > 10
+  action_type: DENY
+  display_name: Total number of worker instances cannot be larger than 10
+  description: Cluster cannot have more than 10 workers, including primary and secondary workers.
+```
+
+```yaml
+custom.gkeEnableLogging:
+  resource_types:
+  - container.googleapis.com/Cluster
+  method_types:
+  - CREATE
+  - UPDATE
+  condition: resource.loggingService == "none"
+  action_type: DENY
+  display_name: Do not disable Cloud Logging
+custom.gkeEnableAutoUpgrade:
+  resource_types:
+  - container.googleapis.com/NodePool
+  method_types:
+  - CREATE
+  condition: resource.management.autoUpgrade == true
+  action_type: ALLOW
+  display_name: Enable node auto-upgrade
+  description: All node pools must have node auto-upgrade enabled.
+```
+
 
 ## Requirements
 
@@ -607,7 +627,7 @@ No modules.
 
 ## Resources by Files
 
-### ..\..\firewall-policies.tf
+### firewall-policies.tf
 
 | Name                                                                                                                                                                         | Type     |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -615,7 +635,7 @@ No modules.
 | [google_compute_firewall_policy_association.association](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_association) | resource |
 | [google_compute_firewall_policy_rule.rule](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_rule)                      | resource |
 
-### ..\..\iam.tf
+### iam.tf
 
 | Name                                                                                                                                                        | Type        |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -626,7 +646,7 @@ No modules.
 | [google_organization_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_policy)      | resource    |
 | [google_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy)                             | data source |
 
-### ..\..\logging.tf
+### logging.tf
 
 | Name                                                                                                                                                                     | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
@@ -637,25 +657,25 @@ No modules.
 | [google_pubsub_topic_iam_member.pubsub-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member)            | resource |
 | [google_storage_bucket_iam_member.storage-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_iam_member)       | resource |
 
-### ..\..\main.tf
+### main.tf
 
 | Name                                                                                                                                                                           | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
 | [google-beta_google_essential_contacts_contact.contact](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_essential_contacts_contact) | resource |
 
-### ..\..\org-policy-custom-constraints.tf
+### org-policy-custom-constraints.tf
 
 | Name                                                                                                                                                                                  | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | [google-beta_google_org_policy_custom_constraint.constraint](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_org_policy_custom_constraint) | resource |
 
-### ..\..\organization-policies.tf
+### organization-policies.tf
 
 | Name                                                                                                                                 | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------ | -------- |
 | [google_org_policy_policy.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/org_policy_policy) | resource |
 
-### ..\..\tags.tf
+### tags.tf
 
 | Name                                                                                                                                                   | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
