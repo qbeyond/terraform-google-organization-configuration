@@ -96,6 +96,28 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/firewall_policies_direct/variables.tf") "" }}
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/firewall_policies_direct/main.tf") "" }}
   ```
+
+  {{ indent 2 "#" }} Firewall policy factory
+
+  The in-built factory allows you to define a single policy, using one file for rules, and an optional file for CIDR range substitution variables. Remember that non-absolute paths are relative to the root module (the folder where you run `terraform`).
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/firewall_policies_factory/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/firewall_policies_factory/main.tf") "" }}
+  ```
+
+  The following two in the root.
+
+  `cidrs.yaml`
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/firewall_policies_factory/cidrs.yaml") "" }}
+  ```
+
+  `rules.yml`
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/firewall_policies_factory/rules.yaml") "" }}
+  ```
+  
   
   {{ .Requirements }}
   {{ .Providers }}

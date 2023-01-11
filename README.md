@@ -96,63 +96,6 @@ Some care must also be taken with the `groups_iam` variable (and in some situati
 See the [organization policy factory in the project module](../project#organization-policy-factory).
 
 
-## Hierarchical firewall policies
-
-### Firewall policy factory
-
-The in-built factory allows you to define a single policy, using one file for rules, and an optional file for CIDR range substitution variables. Remember that non-absolute paths are relative to the root module (the folder where you run `terraform`).
-
-```hcl
-module "org" {
-  source          = "./fabric/modules/organization"
-  organization_id = var.organization_id
-  firewall_policy_factory = {
-    cidr_file   = "configs/firewall-policies/cidrs.yaml"
-    policy_name = null
-    rules_file  = "configs/firewall-policies/rules.yaml"
-  }
-  firewall_policy_association = {
-    factory-policy = module.org.firewall_policy_id["factory"]
-  }
-}
-# tftest modules=1 resources=4 files=cidrs,rules
-```
-
-```yaml
-# tftest file cidrs configs/firewall-policies/cidrs.yaml
-rfc1918:
-  - 10.0.0.0/8
-  - 172.16.0.0/12
-  - 192.168.0.0/16
-```
-
-```yaml
-# tftest file rules configs/firewall-policies/rules.yaml
-allow-admins:
-  description: Access from the admin subnet to all subnets
-  direction: INGRESS
-  action: allow
-  priority: 1000
-  ranges:
-    - $rfc1918
-  ports:
-    all: []
-  target_resources: null
-  enable_logging: false
-
-allow-ssh-from-iap:
-  description: Enable SSH from IAP
-  direction: INGRESS
-  action: allow
-  priority: 1002
-  ranges:
-    - 35.235.240.0/20
-  ports:
-    tcp: ["22"]
-  target_resources: null
-  enable_logging: false
-```
-
 ## Logging Sinks
 
 ```hcl
@@ -549,6 +492,69 @@ module "google_organization_configuration" {
   }
 }
 ```
+
+#### Firewall policy factory
+
+The in-built factory allows you to define a single policy, using one file for rules, and an optional file for CIDR range substitution variables. Remember that non-absolute paths are relative to the root module (the folder where you run `terraform`).
+
+```hcl
+variable "organization_id" {
+  description = "Organization id in organizations/nnnnnn format."
+  type        = string
+}
+
+
+module "google_organization_configuration" {
+  source          = "../.."
+  organization_id = var.organization_id
+  firewall_policy_factory = {
+    cidr_file   = "./cidrs.yaml"
+    policy_name = null
+    rules_file  = "./rules.yaml"
+  }
+  firewall_policy_association = {
+    factory-policy = module.google_organization_configuration.firewall_policy_id["factory"]
+  }
+}
+```
+
+The following two files are in the folder `custom_constrains`.
+
+`cidrs.yaml`
+```yaml
+rfc1918:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+```
+
+`rules.yml`
+```yaml
+allow-admins:
+  description: Access from the admin subnet to all subnets
+  direction: INGRESS
+  action: allow
+  priority: 1000
+  ranges:
+    - $rfc1918
+  ports:
+    all: []
+  target_resources: null
+  enable_logging: false
+
+allow-ssh-from-iap:
+  description: Enable SSH from IAP
+  direction: INGRESS
+  action: allow
+  priority: 1002
+  ranges:
+    - 35.235.240.0/20
+  ports:
+    tcp: ["22"]
+  target_resources: null
+  enable_logging: false
+```
+
 
 ## Requirements
 
