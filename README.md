@@ -98,43 +98,6 @@ See the [organization policy factory in the project module](../project#organizat
 
 ## Hierarchical firewall policies
 
-Hierarchical firewall policies can be managed in two ways:
-
-- via the `firewall_policies` variable, to directly define policies and rules in Terraform
-- via the `firewall_policy_factory` variable, to leverage external YaML files via a simple "factory" embedded in the module ([see here](../../blueprints/factories) for more context on factories)
-
-Once you have policies (either created via the module or externally), you can associate them using the `firewall_policy_association` variable.
-
-### Directly defined firewall policies
-
-```hcl
-module "org" {
-  source          = "./fabric/modules/organization"
-  organization_id = var.organization_id
-  firewall_policies = {
-    iap-policy = {
-      allow-iap-ssh = {
-        description = "Always allow ssh from IAP."
-        direction   = "INGRESS"
-        action      = "allow"
-        priority    = 100
-        ranges      = ["35.235.240.0/20"]
-        ports = {
-          tcp = ["22"]
-        }
-        target_service_accounts = null
-        target_resources        = null
-        logging                 = false
-      }
-    }
-  }
-  firewall_policy_association = {
-    iap_policy = "iap-policy"
-  }
-}
-# tftest modules=1 resources=3
-```
-
 ### Firewall policy factory
 
 The in-built factory allows you to define a single policy, using one file for rules, and an optional file for CIDR range substitution variables. Remember that non-absolute paths are relative to the root module (the folder where you run `terraform`).
@@ -475,6 +438,7 @@ module "google_organization" {
 ### Custom Constraints Factory
 
 Org policy custom constraints can be loaded from a directory containing YAML files where each file defines one or more custom constraints. The structure of the YAML files is exactly the same as the `org_policy_custom_constraints` variable.
+
 The example below deploys a few org policy custom constraints split between two YAML files.
 
 ```hcl
@@ -542,6 +506,49 @@ custom.gkeEnableAutoUpgrade:
   description: All node pools must have node auto-upgrade enabled.
 ```
 
+### Hierarchical firewall policies
+
+Hierarchical firewall policies can be managed in two ways:
+
+- via the `firewall_policies` variable, to directly define policies and rules in Terraform
+- via the `firewall_policy_factory` variable, to leverage external YaML files via a simple "factory" embedded in the module ([see here](../../blueprints/factories) for more context on factories)
+
+Once you have policies (either created via the module or externally), you can associate them using the `firewall_policy_association` variable.
+
+#### Directly defined firewall policies
+
+```hcl
+variable "organization_id" {
+  description = "Organization id in organizations/nnnnnn format."
+  type        = string
+}
+
+
+module "google_organization_configuration" {
+  source          = "../.."
+  organization_id = var.organization_id
+  firewall_policies = {
+    iap-policy = {
+      allow-iap-ssh = {
+        description = "Always allow ssh from IAP."
+        direction   = "INGRESS"
+        action      = "allow"
+        priority    = 100
+        ranges      = ["35.235.240.0/20"]
+        ports = {
+          tcp = ["22"]
+        }
+        target_service_accounts = null
+        target_resources        = null
+        logging                 = false
+      }
+    }
+  }
+  firewall_policy_association = {
+    iap_policy = "iap-policy"
+  }
+}
+```
 
 ## Requirements
 
@@ -627,7 +634,7 @@ No modules.
 
 ## Resources by Files
 
-### firewall-policies.tf
+### ..\..\firewall-policies.tf
 
 | Name                                                                                                                                                                         | Type     |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
@@ -635,7 +642,7 @@ No modules.
 | [google_compute_firewall_policy_association.association](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_association) | resource |
 | [google_compute_firewall_policy_rule.rule](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall_policy_rule)                      | resource |
 
-### iam.tf
+### ..\..\iam.tf
 
 | Name                                                                                                                                                        | Type        |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -646,7 +653,7 @@ No modules.
 | [google_organization_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/organization_iam_policy)      | resource    |
 | [google_iam_policy.authoritative](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_policy)                             | data source |
 
-### logging.tf
+### ..\..\logging.tf
 
 | Name                                                                                                                                                                     | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
@@ -657,25 +664,25 @@ No modules.
 | [google_pubsub_topic_iam_member.pubsub-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/pubsub_topic_iam_member)            | resource |
 | [google_storage_bucket_iam_member.storage-sinks-binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/storage_bucket_iam_member)       | resource |
 
-### main.tf
+### ..\..\main.tf
 
 | Name                                                                                                                                                                           | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
 | [google-beta_google_essential_contacts_contact.contact](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_essential_contacts_contact) | resource |
 
-### org-policy-custom-constraints.tf
+### ..\..\org-policy-custom-constraints.tf
 
 | Name                                                                                                                                                                                  | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | [google-beta_google_org_policy_custom_constraint.constraint](https://registry.terraform.io/providers/hashicorp/google-beta/latest/docs/resources/google_org_policy_custom_constraint) | resource |
 
-### organization-policies.tf
+### ..\..\organization-policies.tf
 
 | Name                                                                                                                                 | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------ | -------- |
 | [google_org_policy_policy.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/org_policy_policy) | resource |
 
-### tags.tf
+### ..\..\tags.tf
 
 | Name                                                                                                                                                   | Type     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
