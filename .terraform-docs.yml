@@ -106,7 +106,7 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/firewall_policies_factory/main.tf") "" }}
   ```
 
-  The following two in the root.
+  The following two files must exist in the root of the configuration.
 
   `cidrs.yaml`
   ```yaml
