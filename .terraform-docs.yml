@@ -132,6 +132,15 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_roles/main.tf") "" }}
   ```
   
+  {{ indent 1 "#" }} Tags
+
+  Refer to the [Creating and managing tags](https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-managing) documentation for details on usage.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/tags/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/tags/main.tf") "" }}
+  ```
+
   {{ .Requirements }}
   {{ .Providers }}
   {{ .Inputs }}
