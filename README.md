@@ -96,72 +96,6 @@ Some care must also be taken with the `groups_iam` variable (and in some situati
 See the [organization policy factory in the project module](../project#organization-policy-factory).
 
 
-## Logging Sinks
-
-```hcl
-module "gcs" {
-  source        = "./fabric/modules/gcs"
-  project_id    = var.project_id
-  name          = "gcs_sink"
-  force_destroy = true
-}
-
-module "dataset" {
-  source     = "./fabric/modules/bigquery-dataset"
-  project_id = var.project_id
-  id         = "bq_sink"
-}
-
-module "pubsub" {
-  source     = "./fabric/modules/pubsub"
-  project_id = var.project_id
-  name       = "pubsub_sink"
-}
-
-module "bucket" {
-  source      = "./fabric/modules/logging-bucket"
-  parent_type = "project"
-  parent      = "my-project"
-  id          = "bucket"
-}
-
-module "org" {
-  source          = "./fabric/modules/organization"
-  organization_id = var.organization_id
-
-  logging_sinks = {
-    warnings = {
-      destination = module.gcs.id
-      filter      = "severity=WARNING"
-      type        = "storage"
-    }
-    info = {
-      bq_partitioned_table = true
-      destination          = module.dataset.id
-      filter               = "severity=INFO"
-      type                 = "bigquery"
-    }
-    notice = {
-      destination = module.pubsub.id
-      filter      = "severity=NOTICE"
-      type        = "pubsub"
-    }
-    debug = {
-      destination = module.bucket.id
-      filter      = "severity=DEBUG"
-      exclusions  = {
-        no-compute = "logName:compute"
-      }
-      type = "logging"
-    }
-  }
-  logging_exclusions = {
-    no-gce-instances = "resource.type=gce_instance"
-  }
-}
-# tftest modules=5 resources=13
-```
-
 ## Custom Roles
 
 ```hcl
@@ -518,7 +452,7 @@ module "google_organization_configuration" {
 }
 ```
 
-The following two files are in the folder `custom_constrains`.
+The following two files must exist in the root of the configuration.
 
 `cidrs.yaml`
 ```yaml
@@ -555,6 +489,49 @@ allow-ssh-from-iap:
   enable_logging: false
 ```
 
+### Logging Sinks
+
+```hcl
+variable "organization_id" {
+  description = "Organization id in organizations/nnnnnn format."
+  type        = string
+}
+
+variable "project_id" {
+  description = "The id of the project to deploy the logging sinks to."
+  type        = string
+}
+
+
+resource "random_id" "gcs" {
+  byte_length = 16
+}
+
+module "gcs" {
+  source        = "qbeyond/gcs/google"
+  version       = "0.1.0"
+  project_id    = var.project_id
+  name          = random_id.gcs.hex
+  force_destroy = true
+}
+
+# Also big query-datasets, pubsub, loggingbucket is supported
+module "google_organization_configuration" {
+  source          = "../.."
+  organization_id = var.organization_id
+
+  logging_sinks = {
+    warnings = {
+      destination = module.gcs.id
+      filter      = "severity=WARNING"
+      type        = "storage"
+    }
+  }
+  logging_exclusions = {
+    no-gce-instances = "resource.type=gce_instance"
+  }
+}
+```
 
 ## Requirements
 

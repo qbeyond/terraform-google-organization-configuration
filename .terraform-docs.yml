@@ -118,6 +118,12 @@ content: |-
   {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/firewall_policies_factory/rules.yaml") "" }}
   ```
   
+  {{ indent 1 "#" }} Logging Sinks
+  
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/logging_sinks/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/logging_sinks/main.tf") "" }}
+  ```
   
   {{ .Requirements }}
   {{ .Providers }}
