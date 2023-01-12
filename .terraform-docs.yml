@@ -141,6 +141,13 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/tags/main.tf") "" }}
   ```
 
+  You can also define network tags, through a dedicated variable `network_tags`.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/network_tags/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/network_tags/main.tf") "" }}
+  ```
+
   {{ .Requirements }}
   {{ .Providers }}
   {{ .Inputs }}
