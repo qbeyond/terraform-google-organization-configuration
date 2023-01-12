@@ -124,6 +124,13 @@ content: |-
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/logging_sinks/variables.tf") "" }}
   {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/logging_sinks/main.tf") "" }}
   ```
+
+  {{ indent 1 "#" }} Custom Roles
+  
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_roles/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_roles/main.tf") "" }}
+  ```
   
   {{ .Requirements }}
   {{ .Providers }}
