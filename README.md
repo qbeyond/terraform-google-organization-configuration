@@ -292,12 +292,11 @@ resource "random_id" "gcs" {
   byte_length = 16
 }
 
-module "gcs" {
-  source        = "qbeyond/gcs/google"
-  version       = "0.1.0"
-  project_id    = var.project_id
+resource "google_storage_bucket" "this" {
   name          = random_id.gcs.hex
+  location      = "EU"
   force_destroy = true
+  project       = var.project_id
 }
 
 # Also big query-datasets, pubsub, loggingbucket is supported
@@ -307,7 +306,7 @@ module "google_organization_configuration" {
 
   logging_sinks = {
     warnings = {
-      destination = module.gcs.id
+      destination = google_storage_bucket.this.id
       filter      = "severity=WARNING"
       type        = "storage"
     }
