@@ -1,0 +1,204 @@
+formatter: "markdown"
+
+# Tested with this version
+# As Majorversion is 0 any change may break
+version: ">=0.16.0"
+
+sections:
+  hide:
+    - header
+    - providers
+
+output:
+  file: "README.md"
+  mode: inject
+
+sort:
+  enabled: true
+  by: required
+
+content: |-
+  {{- define "setDict" -}}
+    {{- $resource := list -}}
+    {{- if hasKey .Dict .Key -}}
+      {{- $resource = get .Dict .Key -}}
+    {{- else -}}
+       {{- $resource = list -}}
+    {{- end -}}
+    {{- $resource := append $resource .Resource -}}
+    {{- $_ := set .Dict .Key $resource -}}
+  {{- end -}}
+  
+  {{- $filesResources := dict -}}
+  {{- $resourceTypes := dict -}}
+  {{- range .Module.Resources -}}
+    {{- template "setDict" dict "Dict" $filesResources "Key" .Position.Filename "Resource" . -}}
+    {{- $isResource := eq "resource" (printf "%s" .GetMode) -}}
+    {{- if $isResource -}}
+      {{- template "setDict" dict "Dict" $resourceTypes "Key" (printf "%s_%s" .ProviderName .Type) "Resource" . -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{ indent 0 "#" }} Usage
+
+  The minimal configuration doesn't do anything. 
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/basic/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/basic/main.tf") "" }}
+  ```
+
+  So you should configure more than that!
+
+  {{ indent 1 "#" }} Custom Constraints
+
+  Refer to the [Creating and managing custom constraints](https://cloud.google.com/resource-manager/docs/organization-policy/creating-managing-custom-constraints) documentation for details on usage.
+  To manage organization policy custom constraints, the `orgpolicy.googleapis.com` service should be enabled in the quota project.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_constraints/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_constraints/main.tf") "" }}
+  ```
+
+  {{ indent 1 "#" }} Custom Constraints Factory
+
+  Org policy custom constraints can be loaded from a directory containing YAML files where each file defines one or more custom constraints. The structure of the YAML files is exactly the same as the `org_policy_custom_constraints` variable.
+  
+  The example below deploys a few org policy custom constraints split between two YAML files.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_constraints_factory/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_constraints_factory/main.tf") "" }}
+  ```
+
+  The following two files are in the folder `custom_constrains`.
+
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/custom_constraints_factory/custom_constraints/dataproc.yaml") "" }}
+  ```
+
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/custom_constraints_factory/custom_constraints/gke.yaml") "" }}
+  ```
+  
+  {{ indent 1 "#" }} Hierarchical firewall policies
+
+  Hierarchical firewall policies can be managed in two ways:
+
+  - via the `firewall_policies` variable, to directly define policies and rules in Terraform
+  - via the `firewall_policy_factory` variable, to leverage external YaML files via a simple "factory" embedded in the module ([see here](../../blueprints/factories) for more context on factories)
+
+  Once you have policies (either created via the module or externally), you can associate them using the `firewall_policy_association` variable.
+
+  {{ indent 2 "#" }} Directly defined firewall policies
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/firewall_policies_direct/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/firewall_policies_direct/main.tf") "" }}
+  ```
+
+  {{ indent 2 "#" }} Firewall policy factory
+
+  The in-built factory allows you to define a single policy, using one file for rules, and an optional file for CIDR range substitution variables. Remember that non-absolute paths are relative to the root module (the folder where you run `terraform`).
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/firewall_policies_factory/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/firewall_policies_factory/main.tf") "" }}
+  ```
+
+  The following two files must exist in the root of the configuration.
+
+  `cidrs.yaml`
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/firewall_policies_factory/cidrs.yaml") "" }}
+  ```
+
+  `rules.yml`
+  ```yaml
+  {{ regexReplaceAll "# Copyright(#[^#]|[^*])*# limitations under the License.\\s*" (include "examples/firewall_policies_factory/rules.yaml") "" }}
+  ```
+  
+  {{ indent 1 "#" }} Logging Sinks
+  
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/logging_sinks/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/logging_sinks/main.tf") "" }}
+  ```
+
+  {{ indent 1 "#" }} Custom Roles
+  
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/custom_roles/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/custom_roles/main.tf") "" }}
+  ```
+  
+  {{ indent 1 "#" }} Tags
+
+  Refer to the [Creating and managing tags](https://cloud.google.com/resource-manager/docs/tags/tags-creating-and-managing) documentation for details on usage.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/tags/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/tags/main.tf") "" }}
+  ```
+
+  You can also define network tags, through a dedicated variable `network_tags`.
+
+  ```hcl
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/\\s+" (include "examples/network_tags/variables.tf") "" }}
+  {{ regexReplaceAll "\\/\\*(\\*[^\\/]|[^*])*\\*\\/" (include "examples/network_tags/main.tf") "" }}
+  ```
+
+  {{ .Requirements }}
+  {{ .Providers }}
+  {{ .Inputs }}
+  {{ .Outputs }}
+  {{ if .Config.Sections.Resources -}}
+    {{- if not (keys $resourceTypes) -}}
+        {{- if not .Config.Settings.HideEmpty -}}
+            {{- indent 0 "#" }} Resource types
+
+            No resources.
+        {{ end }}
+      {{ else }}
+        {{ indent 0 "#" }} Resource types
+
+        | Type | Used |
+        |------|-------|
+        {{- range $type,$resources := $resourceTypes }}
+          {{- $url := (first $resources).URL -}}
+          {{- $type = ternary $url (printf "[%s](%s)" $type $url) $type }}
+          | {{ $type }} | {{ len $resources }} |
+        {{- end }}
+
+        **`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
+      {{ end }}
+  {{ end -}}
+
+  {{ .Modules }}
+  {{ if or .Config.Sections.Resources .Config.Sections.DataSources -}}
+      {{- if not (keys $filesResources) -}}
+          {{- if not .Config.Settings.HideEmpty -}}
+              {{ indent 0 "#" }} Resources by Files
+
+              No resources.
+          {{ end }}
+      {{ else }}
+          {{ indent 0 "#" }} Resources by Files
+          {{- range $fileName,$resources := $filesResources }}
+
+              {{ indent 1 "#" }} {{ $fileName }}
+
+              | Name | Type |
+              |------|------|
+              
+              {{- range $resources -}}
+                {{- $isResource := and $.Config.Sections.Resources ( eq "resource" (printf "%s" .GetMode)) }}
+                {{- $isDataResource := and $.Config.Sections.DataSources ( eq "data source" (printf "%s" .GetMode)) }}
+                {{- if or $isResource $isDataResource }}
+                    {{- $fullspec := ternary .URL (printf "[%s](%s)" .Spec .URL) .Spec }}
+                    | {{ $fullspec }} | {{ .GetMode }} |
+                {{- end }}
+              {{- end -}}
+          {{- end }}
+      {{ end }}
+  {{- end -}}
