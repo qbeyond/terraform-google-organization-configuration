@@ -572,3 +572,7 @@ No modules.
 | [google_tags_tag_value.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value) | resource |
 | [google_tags_tag_value_iam_binding.default](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/tags_tag_value_iam_binding) | resource |
 <!-- END_TF_DOCS -->
+
+## Contribute
+
+This module is derived from [google cloud foundation fabric module `organization` v19](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/tree/v19.0.0/modules/organization). It is designed to be able to integrate new changes from the base repository. Refer to [guide in `terraform-google-landing-zone` repository](https://github.com/qbeyond/terraform-google-landing-zone/tree/main#updating-a-repository) for information on integrating changes.
